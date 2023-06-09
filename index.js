@@ -42,32 +42,109 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-// all collections
+    // all collections
+
+    const usersCollection = client.db("foreign-language-camp").collection("users")
+    const classCollection = client.db("foreign-language-camp").collection("classes");
+
+    // all collections
 
 
-
-
-// all collections
-
+    //security apis
     app.post('/jwt', (req, res) => {
-        const user = req.body;
-        const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-  
-        res.send({ token })
-      })
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
 
-      const verifyAdmin = async (req, res, next) => {
-        const email = req.decoded.email;
-        const query = { email: email }
-        const user = await usersCollection.findOne(query);
-        if (user?.role !== 'admin') {
-          return res.status(403).send({ error: true, message: 'forbidden message' });
-        }
-        next();
+      res.send({ token })
+    })
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' });
       }
-      await client.db("admin").command({ ping: 1 });
-      console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  }finally {
+      next();
+    }
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== 'instructor') {
+        return res.status(403).send({ error: true, message: 'forbidden message' });
+      }
+      next();
+    }
+    //security apis
+
+    // all CRUD operations
+
+    // users
+    app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const query = { email: user.email }
+      const existingUser = await usersCollection.findOne(query);
+
+      if (existingUser) {
+        return res.send({ message: 'user already exists' })
+      }
+
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+
+    app.patch('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const makeRole = req.body.role;
+      console.log(req.body, id);
+      
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: makeRole
+        },
+      };
+
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
+// check admin
+app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+  const email = req.params.email;
+
+  if (req.decoded.email !== email) {
+    res.send({ admin: false })
+  }
+
+  const query = { email: email }
+  const user = await usersCollection.findOne(query);
+  const result = { role: user.role }
+  console.log(result);
+  res.send(result);
+})
+    app.get('/classes', verifyJWT, verifyAdmin, async(req, res) => {
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    })
+    app.post('/classes', verifyJWT, verifyInstructor, async (req, res) => {
+      const newClass = req.body;
+      console.log(newClass);
+      const result = await classCollection.insertOne(newClass)
+      res.send(result)
+    })
+    
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
   }
@@ -80,7 +157,7 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Bistro boss is sitting on port ${port}`);
+  console.log(`Foreign language camp is running ${port}`);
 })
 
 
