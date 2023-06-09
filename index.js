@@ -86,7 +86,7 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/users', async (req, res) => {
+    app.post('/users',  async (req, res) => {
       const user = req.body;
       console.log(user);
       const query = { email: user.email }
@@ -131,8 +131,24 @@ app.get('/users/admin/:email', verifyJWT, async (req, res) => {
   console.log(result);
   res.send(result);
 })
+
+// insctructors
+app.get('/instructors', async(req, res) => {
+  const result = await usersCollection.find({role: "instructor"}).toArray();
+  res.send(result);
+})
+
     app.get('/classes', verifyJWT, verifyAdmin, async(req, res) => {
       const result = await classCollection.find().toArray();
+      res.send(result);
+    })
+    app.get('/active-classes', async(req, res) => {
+      const result = await classCollection.find({status: 'approved'}).toArray();
+      res.send(result);
+    })
+    app.get('/classes/:email', verifyJWT, verifyInstructor, async(req, res) => {
+      const result = await classCollection.find({instructorEmail: req.params.email}).toArray();
+      console.log(req.params.email, result);
       res.send(result);
     })
     app.post('/classes', verifyJWT, verifyInstructor, async (req, res) => {
@@ -142,6 +158,24 @@ app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       res.send(result)
     })
     
+    app.patch('/classes/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const makeStatus = req.body.status;
+      const feedback = req.body.feedback;
+      console.log(req.body, id);
+      
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: makeStatus,
+          feedback: feedback
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
