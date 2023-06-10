@@ -152,6 +152,14 @@ app.get('/instructors/:limit', async(req, res) => {
       const result = await classCollection.find().toArray();
       res.send(result);
     })
+    app.patch('/classes/:id', verifyJWT, async(req, res) => {
+      const id = req.params.id;
+      console.log('157 ',id);
+      const result = classCollection.findOneAndUpdate({ _id: new ObjectId(id) },
+      { $inc: { seat: -1 } },
+      { returnOriginal: false })
+      res.send(result)
+    })
     app.get('/active-classes/:limit', async(req, res) => {
       const limit = req.params.limit;
       if(limit === 'six'){
@@ -166,12 +174,12 @@ app.get('/instructors/:limit', async(req, res) => {
     })
     app.get('/classes/:email', verifyJWT, verifyInstructor, async(req, res) => {
       const result = await classCollection.find({instructorEmail: req.params.email}).toArray();
-      console.log(req.params.email, result);
+      // console.log(req.params.email, result);
       res.send(result);
     })
     app.post('/classes', verifyJWT, verifyInstructor, async (req, res) => {
       const newClass = req.body;
-      console.log(newClass);
+      // console.log(newClass);
       const result = await classCollection.insertOne(newClass)
       res.send(result)
     })
@@ -180,7 +188,7 @@ app.get('/instructors/:limit', async(req, res) => {
       const id = req.params.id;
       const makeStatus = req.body.status;
       const feedback = req.body.feedback;
-      console.log(req.body, id);
+      // console.log(req.body, id);
       
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -198,18 +206,24 @@ app.get('/instructors/:limit', async(req, res) => {
 app.get('/selected-classes/:email', verifyJWT, async(req, res) => {
   console.log(req.params.email);
   const result = await selectedClassCollection.find({email: req.params.email}).toArray();
-  console.log(result);
+  // console.log(result);
   res.send(result)
 })
 app.post('/selected-classes',verifyJWT, async(req, res) => {
 
-  const selectedClass = req.body;
-  const alreadySelected = await selectedClassCollection.findOne({class: selectedClass});
-  console.log(selectedClass, alreadySelected);
-  if(selectedClass === alreadySelected){
+  const classDetails = req.body;
+  const alreadySelected = await selectedClassCollection.findOne({class: classDetails.class});
+  console.log(classDetails, alreadySelected);
+  if(classDetails.class === alreadySelected){
     res.send({message: "already selected"})
   }
-  const result = await selectedClassCollection.insertOne(selectedClass);
+  const result = await selectedClassCollection.insertOne(classDetails);
+  res.send(result)
+})
+app.delete('/selected-classes/:id', verifyJWT, async(req, res) => {
+  const id = req.params.id;
+  console.log('from 217',id);
+  const result = selectedClassCollection.deleteOne({_id: new ObjectId(id)})
   res.send(result)
 })
 
