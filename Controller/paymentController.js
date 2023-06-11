@@ -46,8 +46,9 @@ const setPayment = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     const payment = req.body;
+    const date = new Date()
     console.log(payment);
-    const insertResult = await paymentCollection.insertOne(payment);
+    const insertResult = await paymentCollection.insertOne({...payment, date});
 
     const deleteResult = await selectedClassCollection.deleteOne({ _id: payment.classId })
     console.log({ insertResult, deleteResult });
@@ -56,7 +57,7 @@ const setPayment = async (req, res) => {
 }
 const enrolledClasses = async (req, res) => {
     const email = req.params.email;
-    const result = await paymentCollection.find({ email: email }).toArray();
+    const result = await paymentCollection.find({ email: email }).sort({date: -1}).toArray();
     res.send(result)
 }
 module.exports = { paymentIntent, setPayment, getPaymentInfo, enrolledClasses }

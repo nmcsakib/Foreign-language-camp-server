@@ -6,7 +6,7 @@ const getClasses = async(req, res) => {
     res.send(result);
   }
   const getInstructorsClass = async(req, res) => {
-    const result = await classCollection.find({instructorEmail: req.params.email}).toArray();
+    const result = await classCollection.find({instructorEmail: req.params.email}).sort({date: -1}).toArray();
     // console.log(req.params.email, result);
     res.send(result);
   }
@@ -26,15 +26,17 @@ const getClasses = async(req, res) => {
   }
 
   const postClass = async (req, res) => {
+    const date = new Date()
     const newClass = req.body;
     const totalStudent = 0;
     // console.log(newClass);
-    const result = await classCollection.insertOne({...newClass, totalStudent})
+    const result = await classCollection.insertOne({...newClass, totalStudent, date})
     res.send(result)
   }
 const patchStatus = async (req, res) => {
     const id = req.params.id;
     const makeStatus = req.body.status;
+    
     const feedback = req.body.feedback;
     // console.log(req.body, id);
     
