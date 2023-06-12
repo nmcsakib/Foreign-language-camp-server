@@ -2,13 +2,13 @@ const { usersCollection } = require("../models/collections");
 
 const { ObjectId } = require('mongodb')
 const getUsers = async (req, res) => {
-    const result = await usersCollection.find().toArray();
+    const result = await usersCollection.find().sort({ role: { $ne: 'admin' }, role: 1 }).toArray();
     res.send(result);
   }
   const postUser =   async (req, res) => {
     const user = req.body;
     
-    console.log(user);
+    console.log('user => ', user);
     const query = { email: user.email }
     const existingUser = await usersCollection.findOne(query);
 

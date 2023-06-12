@@ -37,7 +37,7 @@ const getPaymentInfo = async (req, res) => {
         price: 1,
         transactionId: 1,
         date: 1
-    }).toArray();
+    }).sort({date: -1}).toArray();
     console.log(result);
     res.send(result)
 }
