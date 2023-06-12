@@ -50,7 +50,7 @@ const setPayment = async (req, res) => {
     console.log(payment);
     const insertResult = await paymentCollection.insertOne({...payment, date});
 
-    const deleteResult = await selectedClassCollection.deleteOne({ _id: payment.classId })
+    const deleteResult = await selectedClassCollection.deleteOne({ _id: new ObjectId(payment.classId) })
     console.log({ insertResult, deleteResult });
 
     res.send({ insertResult, deleteResult });
