@@ -13,7 +13,7 @@ const getClasses = async(req, res) => {
 
   const getApprovedClasses =  async(req, res) => {
     const limit = req.params.limit;
-    console.log(limit);
+  
     if(limit === 'six'){
        const result = await classCollection.find({status: 'approved'}).limit(6).sort({totalStudents: -1}).toArray();
     res.send(result);
@@ -55,7 +55,7 @@ const patchStatus = async (req, res) => {
 
   const updateSeatAndStudents = async(req, res) => {
     const id = req.params.id;
-    console.log('157 ',id);
+    
     const result = classCollection.findOneAndUpdate({ _id: new ObjectId(id) },
     { $inc: { seat: -1, totalStudents: 1 } },
     { returnOriginal: false })

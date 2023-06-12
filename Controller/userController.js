@@ -30,14 +30,14 @@ const getUsers = async (req, res) => {
     const query = { email: email }
     const user = await usersCollection.findOne(query);
     const result = { role: user.role }
-    console.log(result);
+    
     res.send(result);
   }
 
   const addRole =  async (req, res) => {
     const id = req.params.id;
     const makeRole = req.body.role;
-    console.log(req.body, id);
+    
     
     const filter = { _id: new ObjectId(id) };
     const updateDoc = {

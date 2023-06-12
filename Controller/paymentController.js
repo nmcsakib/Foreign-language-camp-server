@@ -11,7 +11,7 @@ const paymentIntent = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     const { price } = req.body;
-    console.log('price', req.body)
+    
     const amount = parseInt(price * 100);
     const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -29,7 +29,7 @@ const getPaymentInfo = async (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     const email = req.params.email;
-    console.log(email);
+    
     const result = await paymentCollection.find({ email: email }).project({
         _id: 1,
         classTitle: 1,
@@ -38,7 +38,7 @@ const getPaymentInfo = async (req, res) => {
         transactionId: 1,
         date: 1
     }).sort({date: -1}).toArray();
-    console.log(result);
+    
     res.send(result)
 }
 const setPayment = async (req, res) => {
@@ -47,7 +47,7 @@ const setPayment = async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     const payment = req.body;
     const date = new Date()
-    console.log(payment);
+    
     const insertResult = await paymentCollection.insertOne({...payment, date});
 
     const deleteResult = await selectedClassCollection.deleteOne({ _id: new ObjectId(payment.classId) })
